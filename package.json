@@ -1,0 +1,31 @@
+{
+  "name": "piebot",
+  "version": "1.0.0",
+  "description": "A bot which is a bot.",
+  "main": "bot.ts",
+  "scripts": {
+    "test": "node bot.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/scottricity/piebot.git"
+  },
+  "author": "Jonathan Scott",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/scottricity/piebot/issues"
+  },
+  "homepage": "https://github.com/scottricity/piebot#readme",
+  "dependencies": {
+    "sequelize": "^6.25.5",
+    "fs-extra": "^10.1.0",
+    "path": "^0.12.7",
+    "got": "^12.5.2",
+    "pretty-ms": "^8.0.0",
+    "discord.js": "^14.6.0",
+    "@discordjs/builders": "^1.3.0",
+    "@discordjs/voice": "^0.13.0",
+    "ffmpeg-static": "^5.1.0",
+    "chalk": "^5.1.2"
+  }
+}
