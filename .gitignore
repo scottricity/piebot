@@ -102,3 +102,6 @@ dist
 
 # TernJS port file
 .tern-port
+
+# Ignore bot settings (dev)
+bot_settings.yaml
