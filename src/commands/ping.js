@@ -1,16 +1,26 @@
-import {SlashCommandBuilder} from "@discordjs/builders"
-import { Client , Integration } from "discord.js"
+import { SlashCommand , CommandContext } from "slash-create";
+import { fileURLToPath } from "url"
+import path, { dirname } from "path";
+const fname = fileURLToPath(import.meta.url)
+export class Command extends SlashCommand {
+	constructor(creator){
+		super(creator, {
+			name: 'ping',
+			description: "*pong* its a",
+			throttling: {
+				usages: 1,
+				duration: 3
+			}
+		})
 
-export default {
-    data: new SlashCommandBuilder()
-        .setName('ping')
-        .setDescription("Replies with Pong!"),
-    /**
-     * 
-     * @param {Client} client 
-     * @param {Integration} interaction 
-     */
-    async execute(client, interaction) {
-        await interaction.reply(`\`${Math.floor(client.ws.ping)}ms\``)
-    }
+		this.filePath = fname;
+	}
+
+	/**
+	 * 
+	 * @param {CommandContext} ctx 
+	 */
+	async run(ctx) {
+		await ctx.send('ye')
+	}
 }

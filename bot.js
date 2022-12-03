@@ -5,69 +5,67 @@
 
 import { REST, Routes, Client, GatewayIntentBits, Collection } from "discord.js";
 import chalk from "chalk";
-import path from "path";
+import { fileURLToPath } from "url"
+import path, { dirname } from "path";
+import { SlashCreator, GatewayServer } from "slash-create";
 import fs from "fs-extra";
 import yaml from "js-yaml";
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 let settingsFile = "./bot_settings.yaml"
 const settings = yaml.load(fs.readFileSync(settingsFile))
 
-
-
 let events = {
-    dir: "./src/events",
-    connections: {}
+	dir: "./src/events",
+	connections: {}
 }
-
-var commands = {
-    dir: "./src/commands",
-    paths: [],
-    list: {}
-}
-
-//Command Handler
-//Load the command paths
-for (const file of fs.readdirSync(commands.dir).filter(file => file.endsWith('.js'))) {
-    if (!file) break;
-    commands.paths.push(`${commands.dir}/${file}`)
-}
-var loadCMDs = async () => {
-    for (const file of commands.paths){
-        let cmd = await import(file)
-        let cmdData = cmd.default
-        commands.list[cmdData.data.name] = {data: cmdData.data, fn: cmdData.execute}
-    }
-}
-
-await loadCMDs()
-
 
 //Create the client
-let rest = new REST({ version: "10" }).setToken(settings.token);
 
 const client = new Client({
-    intents: Object.values(GatewayIntentBits).filter(e => typeof e == "number")
+	intents: Object.values(GatewayIntentBits).filter(e => typeof e == "number"),
+	presence: {status: "dnd"}
 })
 
-fs.readdirSync(events.dir).filter(f => f.endsWith(".js")).forEach(async (file) => {
-    let ev = await import(`./src/events/${file}`)
-    client.on(file.split('.')[0], ev.default.bind(null, client))
-})
-client.on('interactionCreate', (int) => {
-    if (!int.isCommand()) return;
-    commands.list[int.commandName].fn(client, int)
+let creator = new SlashCreator({
+	applicationID: settings.app_id,
+	publicKey: settings.public_key,
+	token: settings.token,
+	client
 })
 
-//Set up slash commands
-var setupCommands = async () => {
-    try {
-        console.log("Refreshing (/) commands");
-        await rest.put(Routes.applicationCommands(settings.client_id), { body: Object.values(commands.list).map((value, key, ar) => { return value.data }) })
-        console.log("Slash commands loaded.")
-    } catch (error) {
-        console.error(error)
-    }
+let s = []
+for (const file of fs.readdirSync('./src/commands')){
+	//let f = await import(`./src/commands/${file}`)
+	//s.push(new f.default(creator))
 }
 
-await setupCommands()
-client.login(settings.token)
+creator
+	.withServer(
+		new GatewayServer(
+			(handler) => client.ws.on('INTERACTION_CREATE', handler)
+		)
+	)
+	.registerCommandsIn(path.join(__dirname, 'src/commands'))
+	.syncGlobalCommands()
+
+var loadConstants = async () => {
+	let file = await import(`./src/clientConstants.js`)
+	client.constants = new file.default(client)
+}
+
+try {
+	await loadConstants()
+	console.log(chalk.greenBright("Successfully loaded in constants"))
+} catch (err) {
+	console.error(err)
+}
+
+fs.readdirSync(events.dir).filter(f => f.endsWith(".js")).forEach(async (file) => {
+	let ev = await import(`./src/events/${file}`)
+	client.on(file.split('.')[0], ev.default.bind(null, client))
+	console.log(chalk.yellow(`Successfully loaded in event ${file.split('.')[0]}`))
+})
+
+client.login(settings.token);

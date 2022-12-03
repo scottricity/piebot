@@ -28,6 +28,7 @@
     "js-yaml": "^4.1.0",
     "path": "^0.12.7",
     "pretty-ms": "^8.0.0",
-    "sequelize": "^6.25.5"
+    "sequelize": "^6.25.5",
+	"slash-create": "^5.10.0"
   }
 }
