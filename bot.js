@@ -37,8 +37,8 @@ let creator = new SlashCreator({
 
 let s = []
 for (const file of fs.readdirSync('./src/commands')){
-	//let f = await import(`./src/commands/${file}`)
-	//s.push(new f.default(creator))
+	let f = await import(`./src/commands/${file}`)
+	s.push(new f.default(creator))
 }
 
 creator
@@ -47,7 +47,7 @@ creator
 			(handler) => client.ws.on('INTERACTION_CREATE', handler)
 		)
 	)
-	.registerCommandsIn(path.join(__dirname, 'src/commands'))
+	.registerCommands(s)
 	.syncGlobalCommands()
 
 var loadConstants = async () => {
