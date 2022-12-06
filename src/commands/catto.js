@@ -1,13 +1,15 @@
 import { SlashCommand , CommandContext } from "slash-create";
-import { EmbedBuilder } from "@discordjs/builders"
-import { fileURLToPath } from "url"
+import { EmbedBuilder } from "@discordjs/builders";
+import got from "got";
+import fs from "fs-extra";
+import { fileURLToPath } from "url";
 import path, { dirname } from "path";
 const fname = fileURLToPath(import.meta.url)
-export default class PingCommand extends SlashCommand {
+export default class CattoCommand extends SlashCommand {
 	constructor(creator){
 		super(creator, {
-			name: 'ping',
-			description: "pong",
+			name: 'catto',
+			description: "meow",
 			throttling: {
 				usages: 1,
 				duration: 3
@@ -15,7 +17,7 @@ export default class PingCommand extends SlashCommand {
 		})
 
 		this.examples = [
-			`/ping`
+			`/catto`
 		]
 		this.filePath = fname;
 	}
@@ -26,15 +28,17 @@ export default class PingCommand extends SlashCommand {
 	 */
 	async run(ctx) {
 		let client = ctx.creator.client
+		let base
+		let img
+		try {
+			base = await got("https://cataas.com/cat?json=true")
+			img = await got(`https://cataas.com/cat/${JSON.parse(base.body)._id}`)
+		}catch(err){
+			console.error(err)
+		}
 		let embed = new EmbedBuilder()
 		embed.setColor(client.constants.dColor)
-		embed.addFields([
-			{
-				name: ":ping_pong:",
-				value: `I ponged back at the speed of **${Math.floor(client.ws.ping)} ms**!`
-			}
-		])
-		embed.setFooter({text: `Pinged by ${ctx.user.username}`})
+		embed.setImage(img.url)
 		embed.setTimestamp()
 		await ctx.send({embeds: [embed]})
 	}

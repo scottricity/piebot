@@ -7,4 +7,5 @@ import { Client , Message } from "discord.js";
  */
 export default function(client, msg) {
     console.log(msg)
+	
 }

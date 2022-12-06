@@ -103,5 +103,11 @@ dist
 # TernJS port file
 .tern-port
 
+# SQLite Local files
+*.sqlite
+
 # Ignore bot settings (dev)
 bot_settings.yaml
+
+# Unknown ".protected" files
+*.protected

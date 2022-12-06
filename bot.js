@@ -10,10 +10,30 @@ import path, { dirname } from "path";
 import { SlashCreator, GatewayServer } from "slash-create";
 import fs from "fs-extra";
 import yaml from "js-yaml";
+
+//Path related variables, required if using commonJS
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
+//Load static settings
 let settingsFile = "./bot_settings.yaml"
+
+//Settings typedef
+/**
+ * @typedef Settings
+ * @type {object}
+ * @prop {string} client_id
+ * @prop {string} app_id
+ * @prop {string} client_secret
+ * @prop {string} public_key
+ * @prop {string} token
+ * @prop {string} prefix
+ * @prop {string} mongodb_uri
+ */
+
+/**
+ * @type {Settings}
+ */
 const settings = yaml.load(fs.readFileSync(settingsFile))
 
 let events = {
@@ -22,11 +42,11 @@ let events = {
 }
 
 //Create the client
-
 const client = new Client({
 	intents: Object.values(GatewayIntentBits).filter(e => typeof e == "number"),
 	presence: {status: "dnd"}
 })
+
 
 let creator = new SlashCreator({
 	applicationID: settings.app_id,
@@ -35,10 +55,24 @@ let creator = new SlashCreator({
 	client
 })
 
-let s = []
-for (const file of fs.readdirSync('./src/commands')){
-	let f = await import(`./src/commands/${file}`)
-	s.push(new f.default(creator))
+var loadConstants = async () => {
+	let file = await import(`./src/clientConstants.js`)
+	client.constants = new file.default(client)
+}
+
+let commands = []
+
+var loadCommands = async () => {
+	for (const file of fs.readdirSync('./src/commands')){
+		let f = await import(`./src/commands/${file}`)
+		commands.push(new f.default(creator))
+	}
+}
+
+try {
+	await loadCommands()
+} catch (error) {
+	console.error(error)
 }
 
 creator
@@ -47,13 +81,10 @@ creator
 			(handler) => client.ws.on('INTERACTION_CREATE', handler)
 		)
 	)
-	.registerCommands(s)
-	.syncGlobalCommands()
-
-var loadConstants = async () => {
-	let file = await import(`./src/clientConstants.js`)
-	client.constants = new file.default(client)
-}
+	.registerCommands(commands)
+	.syncGlobalCommands().then((val) => {
+		console.log(chalk.yellow(`Commands ${commands.map(e => e.commandName).join(",")} loaded`))
+	})
 
 try {
 	await loadConstants()
