@@ -1,4 +1,3 @@
-
 /**
  TODO: Clean and optimize code, currently it's ugly because it's a concept build.
  */

@@ -38,7 +38,6 @@ export default class EvalCommand extends SlashCommand {
 		if (!clientApp.owner?.members.has(ctx.user.id)) return ctx.send('This is for bot developers only.', { ephemeral: true });
 		await ctx.sendModal({
 			title: "PieBot DevModal",
-			custom_id: "evaljs",
 			components: [
 				{
 					type: ComponentType.ACTION_ROW,
@@ -48,7 +47,8 @@ export default class EvalCommand extends SlashCommand {
 							style: TextInputStyle.PARAGRAPH,
 							label: "JavaScript Code",
 							placeholder: 'console.log(String("b" + "a" + + "a" + "a").toLowerCase())',
-							custom_id: "code_input"
+							custom_id: "code_input",
+							required: true
 						}
 					]
 				}
@@ -58,22 +58,18 @@ export default class EvalCommand extends SlashCommand {
 				if (text && text.constructor.name == "Promise")
 					text = await text
 
-				if (typeof text !== "string")
-					text = inspect(text, {depth: 1})
+				text = inspect(text, { depth: 1, maxArrayLength: 12, maxStringLength: 300 })
 
 				text = text.replace(/`/g, "`" + String.fromCharCode(8203)).replace(/@/g, "@" + String.fromCharCode(8203));
 				text = text.replace(new RegExp(client.token, "g"), "[REDACTED]")
 				return text
 			}
-			let code = eval(mctx.values?.code_input)
+			let input = mctx.values?.code_input
+			let code = eval(input)
+			console.log(code)
 			let cleaned = await clean(code)
-			console.log(chalk.bgCyanBright("hi"))
-			return ctx.send(`\`\`\`\n${cleaned}\n\`\`\``);
-
-		}).catch(async err => {
-			await ctx.send('Error.')
+			mctx.send(`Input:\`\`\`js\n${input}\n\`\`\`\nOutput:\n\`\`\`\n${cleaned}\n\`\`\``)
 		})
-		console.log(chalk.bgCyanBright("hi"))
-		return;
+		return true;
 	}
 }

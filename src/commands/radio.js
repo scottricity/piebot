@@ -1,5 +1,7 @@
+
 import { SlashCommand , CommandContext , CommandOptionType } from "slash-create";
-import { joinVoiceChannel } from "@discordjs/voice";
+import "@discordjs/opus";
+import { joinVoiceChannel , createAudioResource , createAudioPlayer , NoSubscriberBehavior } from "@discordjs/voice";
 import { EmbedBuilder } from "@discordjs/builders";
 import { fileURLToPath } from "url";
 import path, { dirname } from "path";
@@ -49,12 +51,23 @@ export default class PingCommand extends SlashCommand {
 		if (client.guilds.cache.get(ctx.guildID)){
 			let guildMember = client.guilds.cache.get(ctx.guildID).members.cache.get(ctx.member.id)
 			if (guildMember && guildMember.voice){
-				const conn = joinVoiceChannel({
-					channelId: guildMember.voice.channelId,
-					selfDeaf: true,
-					guildId: ctx.guildID,
-					adapterCreator: client.guilds.cache.get(ctx.guildID).voiceAdapterCreator
-				})
+				if (ctx.subcommands[0] == "play"){
+					const conn = joinVoiceChannel({
+						channelId: guildMember.voice.channelId,
+						selfDeaf: true,
+						guildId: ctx.guildID,
+						adapterCreator: client.guilds.cache.get(ctx.guildID).voiceAdapterCreator
+					})
+					const res = createAudioResource("D:\\Development\\piebot\\src\\piano2.wav")
+					const player = createAudioPlayer({
+						behaviors: {
+							noSubscriber: NoSubscriberBehavior.Stop
+						}
+					})
+					player.play(res)
+					conn.subscribe(player)
+
+				}
 			}
 		}
 		

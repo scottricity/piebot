@@ -1,10 +1,11 @@
-import { SlashCommand , CommandContext } from "slash-create";
+import { SlashCommand, CommandContext } from "slash-create";
 import { EmbedBuilder } from "@discordjs/builders"
 import { fileURLToPath } from "url"
 import path, { dirname } from "path";
+import { Client } from "discord.js";
 const fname = fileURLToPath(import.meta.url)
 export default class PingCommand extends SlashCommand {
-	constructor(creator){
+	constructor(creator) {
 		super(creator, {
 			name: 'ping',
 			description: "pong",
@@ -25,7 +26,13 @@ export default class PingCommand extends SlashCommand {
 	 * @param {CommandContext} ctx 
 	 */
 	async run(ctx) {
-		let client = ctx.creator.client
+
+		/** 
+		 * @type {Client}
+		*/
+		var client = ctx.creator.client
+
+
 		let embed = new EmbedBuilder()
 		embed.setColor(client.constants.dColor)
 		embed.addFields([
@@ -34,8 +41,8 @@ export default class PingCommand extends SlashCommand {
 				value: `I ponged back at the speed of **${Math.floor(client.ws.ping)} ms**!`
 			}
 		])
-		embed.setFooter({text: `Pinged by ${ctx.user.username}`})
+		embed.setFooter({ text: `Pinged by ${ctx.user.username}` })
 		embed.setTimestamp()
-		await ctx.send({embeds: [embed]})
+		await ctx.send({ embeds: [embed] })
 	}
 }

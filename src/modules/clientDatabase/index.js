@@ -48,6 +48,23 @@ class Provider {
 		this.conn = mongoose.createConnection(uri)
 	}
 
+	async getGlobal(key, defVal){
+		let globalCol = this.conn.collection('global')
+		let globalDoc = await globalCol.findOne({})
+		if (globalDoc && globalDoc.settings){
+			return globalDoc.settings[key] ? globalDoc.settings[key] : defVal ? defVal : {}
+		}
+	}
+
+	async setGlobal(key, value) {
+		let globalCol = this.conn.collection('global')
+		let globalDoc = await globalCol.findOne({})
+		if (globalDoc && globalDoc.settings){
+			globalDoc.settings[key] = value
+			return globalCol.updateOne({"_id": globalDoc._id}, {"$set": {"settings": globalDoc.settings}})
+		}
+	}
+
 	async getUser(userid){
 		let userCol = this.conn.collection('users')
 		let userDoc
@@ -79,8 +96,6 @@ class Provider {
 			newDoc.save()
 		}
 	}
-
-
 }
 
 export default Provider
